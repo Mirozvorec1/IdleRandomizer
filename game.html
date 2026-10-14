@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Randomizer — Игра</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; border-radius: 0; user-select: none; -webkit-user-select: none; }
+
+  body {
+    position: relative;
+    min-height: 100vh;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background: radial-gradient(circle, #000000 0%, #494949 300%);
+    color: #f0f0f0;
+    padding: 34px 26px;
+    overflow-x: hidden;
+    transition: padding-left 0.3s ease;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 10px;
+    border: 2px solid;
+    border-image: linear-gradient(180deg, #fff7a3, #ffd700 50%, #b8860b) 1;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  .back, .points, .card, .chip, .combo-badge, .shop-item, .level,
+  .generate-btn, .buy-btn, .shop-tab {
+    border: 1px solid;
+    border-image: linear-gradient(180deg, #fff7a3, #ffd700 50%, #b8860b) 1;
+  }
+
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    display: grid;
+    gap: 16px;
+    min-height: calc(100vh - 68px);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  header {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+
+  .back {
+    position: fixed;
+    top: 22px;
+    left: 22px;
+    z-index: 50;
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffe98a;
+    text-decoration: none;
+    font-size: 24px;
+    line-height: 1;
+    background: rgba(8, 8, 8, 0.75);
+    transition: filter 0.15s;
+  }
+
+  .back svg { display: block; }
+
+  .back:hover { filter: brightness(1.7); }
+
+  .nav-overlay {
+    position: fixed;
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle, #000000 0%, #494949 300%);
+    pointer-events: none;
+  }
+
+  .nav-overlay.transparent { background: none; }
+
+  .nav-house {
+    color: #ffe98a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    will-change: transform;
+  }
+
+  .nav-house svg { display: block; width: 24px; height: 24px; }
+
+  .points-wrap {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: rgba(8, 8, 8, 0.7);
+    padding: 8px 10px;
+    border: 1px solid;
+    border-image: linear-gradient(180deg, #fff7a3, #ffd700 50%, #b8860b) 1;
+  }
+
+  .stat-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 0 14px;
+    line-height: 1.1;
+    min-width: 96px;
+  }
+
+  .stat-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #9a9a9a;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffd700;
+    white-space: nowrap;
+    text-shadow: 0 0 18px rgba(255, 215, 0, 0.25);
+  }
+
+  .stat-cell + .stat-cell {
+    border-left: 1px solid rgba(255, 215, 0, 0.25);
+  }
+
+  .gain-pop {
+    position: absolute;
+    right: 0;
+    left: 0;
+    top: 100%;
+    margin-top: 6px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 800;
+    color: #ffe98a;
+    pointer-events: none;
+    animation: gainUp 0.9s ease forwards;
+  }
+
+  @keyframes gainUp {
+    0% { opacity: 0; transform: translateY(6px); }
+    15% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-26px); }
+  }
+
+  .card {
+    background: rgba(8, 8, 8, 0.78);
+    padding: 22px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  }
+
+  .card-gen {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-bottom: 100px;
+  }
+
+  .card h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #9a9a9a;
+    margin-bottom: 14px;
+  }
+
+  .number-box {
+    text-align: center;
+    padding: 10px 0 4px;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .number {
+    font-size: 96px;
+    font-weight: 800;
+    line-height: 1;
+    color: #ffd700;
+    text-shadow: 0 0 30px rgba(255, 215, 0, 0.35);
+  }
+
+  .number.pop { animation: pop 0.35s ease; }
+
+  .number.special {
+    color: #fff7a3;
+    text-shadow: 0 0 36px rgba(255, 243, 160, 0.7);
+    animation: specialGlow 0.6s ease;
+  }
+
+  @keyframes pop {
+    0% { transform: scale(0.55); }
+    60% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes specialGlow {
+    0% { transform: scale(0.5); filter: brightness(2.2); }
+    60% { transform: scale(1.25); filter: brightness(1.6); }
+    100% { transform: scale(1); filter: brightness(1); }
+  }
+
+  .result-label {
+    margin-top: 10px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #bdbdbd;
+    min-height: 24px;
+  }
+
+  .result-label .gain { color: #b6ff9f; font-weight: 800; }
+  .result-label .bonus { color: #ffe98a; font-weight: 700; }
+
+  .combo-badge {
+    display: inline-block;
+    margin-top: 9px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffd700;
+    background: rgba(8, 8, 8, 0.7);
+    padding: 4px 16px;
+    opacity: 0.4;
+    transition: 0.2s ease;
+  }
+
+  .combo-badge.active {
+    opacity: 1;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.45);
+    animation: comboPulse 0.5s ease;
+  }
+
+  .combo-badge.special {
+    color: #fff7a3;
+    background: rgba(255, 215, 0, 0.14);
+    box-shadow: 0 0 24px rgba(255, 243, 160, 0.6);
+    animation: comboPulse 0.5s ease;
+  }
+
+  @keyframes comboPulse {
+    0% { transform: scale(1.35); }
+    100% { transform: scale(1); }
+  }
+
+  .history {
+    display: flex;
+    gap: 7px;
+    justify-content: center;
+    flex-wrap: wrap;
+    min-height: 34px;
+    margin-top: 8px;
+  }
+
+  .chip {
+    min-width: 34px;
+    padding: 6px 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    background: rgba(8, 8, 8, 0.7);
+    color: #bdbdbd;
+  }
+
+  .chip.special { background: rgba(255, 215, 0, 0.14); color: #ffd700; }
+
+  .gen-wrap { margin-top: 18px; }
+
+  .range-row { display: none; margin-bottom: 16px; }
+  .range-row.visible { display: block; }
+
+  .range-row label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #bdbdbd;
+    margin-bottom: 10px;
+  }
+
+  .range-row label b { color: #ffd700; font-size: 16px; }
+
+  .slider {
+    position: relative;
+    height: 48px;
+    cursor: pointer;
+    touch-action: none;
+    user-select: none;
+    outline: none;
+  }
+
+  .slider .track {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 6px;
+    height: 8px;
+    background: linear-gradient(90deg, #fff7a3, #ffd700 50%, #b8860b);
+  }
+
+  .slider .thumb {
+    position: absolute;
+    top: 0;
+    width: 16px;
+    height: 20px;
+    background: #ffd700;
+    border: 2px solid #0a0a0a;
+    transform: translateX(-50%);
+    transition: left 0.18s ease;
+    z-index: 2;
+  }
+
+  .slider.dragging .thumb { transition: none; }
+
+  .slider .ticks {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 18px;
+    height: 26px;
+  }
+
+  .tick {
+    position: absolute;
+    top: 0;
+    width: 1px;
+    height: 5px;
+    background: #5a5a5a;
+    transform: translateX(-50%);
+  }
+
+  .tick.major { height: 9px; background: #9a9a9a; }
+
+  .tick .lbl {
+    position: absolute;
+    top: 11px;
+    left: 0;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: #8a8a8a;
+    white-space: nowrap;
+  }
+
+  .generate-btn {
+    position: relative;
+    width: min(420px, calc(100vw - 44px));
+    padding: 18px;
+    background: #131313;
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffe98a;
+    cursor: pointer;
+    overflow: hidden;
+    transition: filter 0.15s ease;
+    pointer-events: auto;
+  }
+
+  .gen-dock {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 22px;
+    display: flex;
+    justify-content: center;
+    z-index: 45;
+    pointer-events: none;
+  }
+
+  .generate-btn:hover:not(.cooling) { filter: brightness(1.7); }
+
+  .generate-btn:focus { outline: none; }
+  .generate-btn::-moz-focus-inner { border: 0; }
+
+  .generate-btn.cooling {
+    color: #7a7a7a;
+    filter: grayscale(0.5) brightness(0.75);
+  }
+
+  .generate-btn.shake { animation: shake 0.18s ease; }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-7px); }
+    75% { transform: translateX(7px); }
+  }
+
+  .generate-btn .cd-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.55);
+    pointer-events: none;
+    transform-origin: left;
+  }
+
+  .generate-btn .cd-text { position: relative; z-index: 2; }
+
+  .shop-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .shop-item {
+    background: rgba(8, 8, 8, 0.7);
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) 128px;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .shop-item .icon { font-size: 26px; text-align: center; }
+  .shop-item .body { min-width: 0; }
+
+  .shop-item .name { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+  .shop-item .desc {
+    font-size: 13px;
+    color: #9a9a9a;
+    line-height: 1.45;
+    min-height: 38px;
+  }
+
+  .shop-item .meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    margin-top: 8px;
+  }
+
+  .shop-item .val {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffe98a;
+    text-align: left;
+  }
+
+  .level {
+    display: inline-block;
+    font-size: 12px;
+    color: #ffd700;
+    background: rgba(8, 8, 8, 0.7);
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+
+  .buy-btn {
+    width: 100%;
+    padding: 11px 6px;
+    background: #131313;
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffe98a;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: filter 0.15s ease;
+  }
+
+  .buy-btn:hover:not(:disabled) { filter: brightness(1.7); }
+
+  .buy-btn.affordable {
+    animation: buyGlow 1.4s ease-in-out infinite;
+  }
+
+  @keyframes buyGlow {
+    0%, 100% { box-shadow: 0 0 8px 1px rgba(255, 215, 0, 0.35); }
+    50% { box-shadow: 0 0 18px 4px rgba(255, 215, 0, 0.75); }
+  }
+
+  .buy-btn:disabled {
+    color: #6a6a6a;
+    cursor: not-allowed;
+    filter: none;
+  }
+
+  .shop-drawer {
+    --panel-w: 340px;
+    position: fixed;
+    left: 12px;
+    top: 78px;
+    bottom: 22px;
+    z-index: 40;
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  @media (max-width: 479px) {
+    .shop-drawer { --panel-w: calc(100vw - 80px); }
+  }
+
+  .shop-panel {
+    box-sizing: content-box;
+    width: 0;
+    padding: 0;
+    border-width: 0;
+    margin: 0;
+    overflow: hidden;
+    background: rgba(6, 6, 6, 0.94);
+    transition: width 0.3s ease, border-width 0.3s ease;
+  }
+
+  .shop-drawer.open .shop-panel {
+    width: var(--panel-w);
+    border-width: 1px;
+  }
+
+  .shop-inner {
+    width: var(--panel-w);
+    height: 100%;
+    padding: 16px;
+    overflow-y: auto;
+  }
+
+  .shop-tab {
+    position: relative;
+    flex: 0 0 46px;
+    width: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(8, 8, 8, 0.75);
+    color: #ffe98a;
+    cursor: pointer;
+    transition: filter 0.15s ease, background 0.2s ease;
+  }
+
+  .shop-tab:hover { filter: brightness(1.7); }
+  .shop-tab.open { background: #131313; }
+
+  .shop-tab.affordable::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    left: 100%;
+    width: 20px;
+    background:
+      linear-gradient(90deg, #fff7a3 0, #ffd700 2px, transparent 2px),
+      radial-gradient(ellipse 20px 100% at left center, rgba(255, 215, 0, 0.75) 0%, rgba(255, 215, 0, 0.35) 45%, transparent 100%);
+    animation: shopGlowOut 1.4s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes shopGlowOut {
+    0%, 100% { opacity: 0.45; }
+    50% { opacity: 1; }
+  }
+
+  @media (min-width: 980px) {
+    body.shop-open { padding-left: 430px; }
+  }
+
+  @media (min-width: 620px) {
+    .number { font-size: 116px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <a class="back" href="index.html" id="backBtn" title="Меню" aria-label="Меню">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 11 12 3l9 8"/>
+        <path d="M5.5 9.5V21h13V9.5"/>
+        <path d="M10 21v-6h4v6"/>
+      </svg>
+    </a>
+    <div class="points-wrap" id="pointsWrap">
+      <div class="stat-cell">
+        <span class="stat-label">Очки</span>
+        <span class="stat-value" id="points">0</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-label">Рекорд</span>
+        <span class="stat-value" id="record">0</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="card card-gen">
+    <div class="number-box">
+      <div class="number" id="number">?</div>
+      <div class="result-label" id="resultLabel">▶</div>
+      <div class="combo-badge" id="comboBadge">Комбо ×1</div>
+      <div class="history" id="history"></div>
+    </div>
+
+    <div class="gen-wrap">
+      <div class="range-row" id="rangeRow">
+        <label>
+          <span>Минимум</span>
+          <b id="rangeValue">1 – 100</b>
+        </label>
+        <div class="slider" id="rangeSlider" tabindex="0">
+          <div class="track"></div>
+          <div class="ticks" id="sliderTicks"></div>
+          <div class="thumb" id="sliderThumb"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="gen-dock">
+  <button class="generate-btn" id="generateBtn">
+    <span class="cd-fill" id="cdFill"></span>
+    <span class="cd-text" id="cdText">🎲 Генерировать</span>
+  </button>
+</div>
+
+<div class="shop-drawer" id="shopDrawer">
+  <section class="card shop-panel" id="shopPanel">
+    <div class="shop-inner">
+      <h2>Магазин</h2>
+      <div class="shop-grid">
+      <div class="shop-item">
+        <div class="icon">⚡</div>
+        <div class="body">
+          <div class="name">Кулдаун</div>
+          <div class="desc">−0.25 с за уровень.</div>
+          <div class="meta">
+            <span class="level" id="cdLevel">Ур. 0/11</span>
+            <span class="val" id="cdVal">3.00 с</span>
+          </div>
+        </div>
+        <button class="buy-btn" id="buyCd">Купить</button>
+      </div>
+
+      <div class="shop-item">
+        <div class="icon">🎚️</div>
+        <div class="body">
+          <div class="name">Минимум диапазона</div>
+          <div class="desc">+1 к ползунку за уровень.</div>
+          <div class="meta">
+            <span class="level" id="rangeLevel">Ур. 0/99</span>
+            <span class="val" id="rangeVal">Макс. ползунка: 1/100</span>
+          </div>
+        </div>
+        <button class="buy-btn" id="buyRange">Купить</button>
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <button class="shop-tab" id="shopTab" title="Магазин" aria-label="Магазин" aria-expanded="false">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="9" cy="20" r="1.6"/>
+      <circle cx="17" cy="20" r="1.6"/>
+      <path d="M3 4h2l2.4 10.5a1.5 1.5 0 0 0 1.5 1.2h7.6a1.5 1.5 0 0 0 1.5-1.2L20 7H6"/>
+    </svg>
+  </button>
+</div>
+
+<script>
+  const SLOT = (() => {
+    const n = parseInt(new URLSearchParams(location.search).get('slot'), 10);
+    return n >= 1 && n <= 3 ? n : 1;
+  })();
+
+  const SAVE_KEY = 'idleRandomizerSave_' + SLOT;
+  const CD_KEY = SAVE_KEY + '_cd';
+
+  try {
+    const old = localStorage.getItem('idleRandomizerSave');
+    if (old) {
+      if (!localStorage.getItem('idleRandomizerSave_1')) localStorage.setItem('idleRandomizerSave_1', old);
+      localStorage.removeItem('idleRandomizerSave');
+    }
+  } catch (e) {}
+  const SPECIALS = [100, 42, 69, 67, 72];
+  const SPECIAL_POINTS = 10;
+  const NORMAL_POINTS = 1;
+
+  const DOUBLE_MULT = 2;
+  const REPEAT_MULT = 10;
+  const DECADE_MULT = 1.5;
+  const SPECIAL_MULT = 2;
+
+  const BASE_COOLDOWN = 3000;
+  const COOLDOWN_STEP = 250;
+  const MIN_COOLDOWN = 250;
+  const CD_PENALTY = 500;
+  const MAX_CD_MS = 10000;
+  const MAX_CD_LEVEL = Math.round((BASE_COOLDOWN - MIN_COOLDOWN) / COOLDOWN_STEP);
+  const MAX_RANGE_LEVEL = 99;
+
+  const DEFAULT = {
+    points: 0,
+    best: 0,
+    cooldownLevel: 0,
+    rangeLevel: 0,
+    sliderMin: 1,
+    combo: 1,
+    lastNumber: null,
+    lastResult: '',
+    lastSpecial: false,
+    history: []
+  };
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return { ...DEFAULT };
+      return { ...DEFAULT, ...JSON.parse(raw) };
+    } catch (e) {
+      return { ...DEFAULT };
+    }
+  }
+
+  let state = load();
+
+  const $ = (id) => document.getElementById(id);
+  const pointsEl = $('points');
+  const numberEl = $('number');
+  const resultLabelEl = $('resultLabel');
+  const comboBadgeEl = $('comboBadge');
+  const historyEl = $('history');
+  const generateBtn = $('generateBtn');
+  const cdFill = $('cdFill');
+  const cdText = $('cdText');
+  const rangeRow = $('rangeRow');
+  const rangeSlider = $('rangeSlider');
+  const sliderThumb = $('sliderThumb');
+  const sliderTicks = $('sliderTicks');
+  const rangeValue = $('rangeValue');
+  const cdLevelEl = $('cdLevel');
+  const rangeLevelEl = $('rangeLevel');
+  const cdValEl = $('cdVal');
+  const rangeValEl = $('rangeVal');
+  const buyCd = $('buyCd');
+  const buyRange = $('buyRange');
+  const shopTab = $('shopTab');
+  const shopPanel = $('shopPanel');
+  const shopDrawer = $('shopDrawer');
+  const recordEl = $('record');
+  const pointsWrap = $('pointsWrap');
+
+  let cooldownUntil = 0;
+  let cooldownMs = getCooldownMs();
+  let cdTotal = cooldownMs;
+  let lastNumber = state.lastNumber !== undefined ? state.lastNumber : null;
+  let lastRollSpecial = state.lastSpecial === true;
+  let combo = state.combo > 1 ? state.combo : 1;
+  let history = Array.isArray(state.history) ? state.history.slice(-30) : [];
+  let sliderRange = { min: 0, max: 0 };
+  let shownPoints = state.points;
+  let pointsRaf = 0;
+
+  restoreCd();
+
+  function fmtNum(n) {
+    n = Math.round(n);
+    const abs = Math.abs(n);
+    if (abs < 100000) return n.toLocaleString('ru-RU');
+    if (abs < 1e9) {
+      let div = abs >= 1e6 ? 1e6 : 1e3;
+      let v = Math.round((n / div) * 10) / 10;
+      if (Math.abs(v) >= 1000) {
+        div = 1e6;
+        v = Math.round((n / div) * 10) / 10;
+      }
+      return String(v).replace('.', ',') + (div === 1e6 ? 'M' : 'K');
+    }
+    return String(Math.round((n / 1e9) * 10) / 10).replace('.', ',') + 'B';
+  }
+
+  function animatePoints(to) {
+    cancelAnimationFrame(pointsRaf);
+    const from = shownPoints;
+    if (from === to) {
+      pointsEl.textContent = fmtNum(to);
+      return;
+    }
+    const start = performance.now();
+    const dur = 450;
+    function step(t) {
+      const p = Math.min(1, (t - start) / dur);
+      const e = 1 - Math.pow(1 - p, 3);
+      shownPoints = p < 1 ? Math.round(from + (to - from) * e) : to;
+      pointsEl.textContent = fmtNum(shownPoints);
+      if (p < 1) pointsRaf = requestAnimationFrame(step);
+    }
+    pointsRaf = requestAnimationFrame(step);
+  }
+
+  function spawnGain(amount) {
+    const el = document.createElement('span');
+    el.className = 'gain-pop';
+    el.textContent = '+' + fmtNum(amount);
+    pointsWrap.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+  }
+
+  function save() {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+  }
+
+  function saveCd() {
+    try {
+      localStorage.setItem(CD_KEY, JSON.stringify({ until: cooldownUntil, total: cdTotal }));
+    } catch (e) {}
+  }
+
+  function restoreCd() {
+    try {
+      const raw = localStorage.getItem(CD_KEY);
+      if (!raw) return;
+      const cd = JSON.parse(raw);
+      if (!cd || typeof cd.until !== 'number') return;
+      const remaining = cd.until - Date.now();
+      if (remaining <= 0) return;
+      cooldownUntil = cd.until;
+      cdTotal = Math.max(typeof cd.total === 'number' ? cd.total : 0, remaining);
+      generateBtn.classList.add('cooling');
+      requestAnimationFrame(tick);
+    } catch (e) {}
+  }
+
+  function getCooldownMs() {
+    return Math.max(MIN_COOLDOWN, BASE_COOLDOWN - state.cooldownLevel * COOLDOWN_STEP);
+  }
+
+  function cdCost() {
+    return Math.round(15 * Math.pow(1.75, state.cooldownLevel));
+  }
+
+  function rangeCost() {
+    return Math.round(30 * Math.pow(1.6, state.rangeLevel));
+  }
+
+  function getMinValue() {
+    if (state.rangeLevel <= 0) return 1;
+    const cap = Math.min(100, 1 + state.rangeLevel);
+    return Math.min(Math.max(state.sliderMin, 1), cap);
+  }
+
+  function setSliderRange(min, max) {
+    if (sliderRange.min === min && sliderRange.max === max) return;
+    sliderRange = { min, max };
+    buildTicks();
+  }
+
+  function setThumb(v) {
+    const span = sliderRange.max - sliderRange.min;
+    const pct = span > 0 ? ((v - sliderRange.min) / span) * 100 : 0;
+    sliderThumb.style.left = pct + '%';
+  }
+
+  function buildTicks() {
+    const min = sliderRange.min;
+    const max = sliderRange.max;
+    const span = max - min;
+    const major = span > 40 ? 10 : span > 12 ? 5 : 1;
+    const minor = major >= 10 ? 2 : 1;
+
+    const values = [];
+    for (let v = min; v <= max; v += minor) values.push(v);
+    if (values[values.length - 1] !== max) values.push(max);
+
+    let lastLabel = null;
+    sliderTicks.innerHTML = values.map((v) => {
+      const pos = span > 0 ? ((v - min) / span) * 100 : 0;
+      const gridMajor = (v - min) % major === 0;
+      const isMajor = gridMajor || v === max;
+      let label = '';
+      if (gridMajor || (v === max && (lastLabel === null || v - lastLabel >= major * 0.6))) {
+        label = '<span class="lbl">' + v + '</span>';
+        lastLabel = v;
+      }
+      return '<span class="tick' + (isMajor ? ' major' : '') +
+        '" style="left:' + pos + '%">' + label + '</span>';
+    }).join('');
+  }
+
+  function sliderFraction(clientX) {
+    const rect = rangeSlider.getBoundingClientRect();
+    if (!rect.width) return 0;
+    return Math.min(Math.max((clientX - rect.left) / rect.width, 0), 1);
+  }
+
+  function sliderValueAt(clientX) {
+    const span = sliderRange.max - sliderRange.min;
+    return sliderRange.min + Math.round(sliderFraction(clientX) * span);
+  }
+
+  function applySliderValue(v) {
+    const c = Math.min(Math.max(v, sliderRange.min), sliderRange.max);
+    if (c === state.sliderMin) return;
+    state.sliderMin = c;
+    rangeValue.textContent = c + ' – 100';
+    save();
+  }
+
+  function render() {
+    animatePoints(state.points);
+    recordEl.textContent = fmtNum(state.best);
+
+    cooldownMs = getCooldownMs();
+    cdValEl.textContent = (cooldownMs / 1000).toFixed(2) + ' с';
+
+    cdLevelEl.textContent = 'Ур. ' + state.cooldownLevel + '/' + MAX_CD_LEVEL;
+    rangeLevelEl.textContent = 'Ур. ' + state.rangeLevel + '/' + MAX_RANGE_LEVEL;
+    rangeValEl.textContent = 'Макс. ползунка: ' + Math.min(100, 1 + state.rangeLevel) + '/100';
+
+    renderBuy(buyCd, state.cooldownLevel >= MAX_CD_LEVEL, cdCost());
+    renderBuy(buyRange, state.rangeLevel >= MAX_RANGE_LEVEL, rangeCost());
+
+    const canCd = state.cooldownLevel < MAX_CD_LEVEL && state.points >= cdCost();
+    const canRange = state.rangeLevel < MAX_RANGE_LEVEL && state.points >= rangeCost();
+    shopTab.classList.toggle('affordable', canCd || canRange);
+
+    if (state.rangeLevel > 0) {
+      rangeRow.classList.add('visible');
+      const sliderMax = Math.min(100, 1 + state.rangeLevel);
+      setSliderRange(1, sliderMax);
+      if (state.sliderMin > sliderMax) state.sliderMin = sliderMax;
+      if (state.sliderMin < 1) state.sliderMin = 1;
+      setThumb(state.sliderMin);
+      rangeValue.textContent = state.sliderMin + ' – 100';
+    } else {
+      rangeRow.classList.remove('visible');
+      rangeValue.textContent = '1 – 100';
+    }
+
+    save();
+  }
+
+  function renderBuy(btn, maxed, cost) {
+    if (maxed) {
+      btn.textContent = 'Макс.';
+      btn.disabled = true;
+      btn.classList.remove('affordable');
+      return;
+    }
+    const can = state.points >= cost;
+    btn.textContent = 'Купить · ' + cost;
+    btn.disabled = !can;
+    btn.classList.toggle('affordable', can);
+  }
+
+  function renderHistory() {
+    historyEl.innerHTML = '';
+    history.slice(-12).forEach((n) => {
+      const chip = document.createElement('span');
+      chip.className = 'chip' + (SPECIALS.includes(n) ? ' special' : '');
+      chip.textContent = n;
+      historyEl.appendChild(chip);
+    });
+  }
+
+  function fmtMult(x) {
+    return String(Number(x.toFixed(4)));
+  }
+
+  function renderCombo() {
+    comboBadgeEl.textContent = 'Комбо ×' + fmtMult(combo);
+    comboBadgeEl.classList.toggle('active', combo > 1);
+    comboBadgeEl.classList.toggle('special', lastRollSpecial);
+  }
+
+  function generate() {
+    const now = Date.now();
+
+    if (now < cooldownUntil) {
+      cooldownUntil = Math.min(cooldownUntil + CD_PENALTY, now + MAX_CD_MS);
+      cdTotal = cooldownUntil - now;
+      saveCd();
+      shakeBtn();
+      return;
+    }
+
+    const min = getMinValue();
+    const value = Math.floor(Math.random() * (100 - min + 1)) + min;
+    const isSpecial = SPECIALS.includes(value);
+    const base = isSpecial ? SPECIAL_POINTS : NORMAL_POINTS;
+
+    const isDouble = value >= 11 && value <= 99 && value % 11 === 0;
+    const isRepeat = lastNumber !== null && value === lastNumber;
+    const isDecade = lastNumber !== null && !isRepeat &&
+      Math.floor(lastNumber / 10) === Math.floor(value / 10);
+
+    const parts = [];
+    let rollMult = 1;
+
+    if (isSpecial) {
+      rollMult *= SPECIAL_MULT;
+      parts.push('особое ×' + fmtMult(SPECIAL_MULT));
+    }
+    if (isDouble) {
+      rollMult *= DOUBLE_MULT;
+      parts.push('×' + DOUBLE_MULT);
+    }
+    if (isRepeat) {
+      rollMult *= REPEAT_MULT;
+      parts.push('×' + REPEAT_MULT);
+    } else if (isDecade) {
+      rollMult *= DECADE_MULT;
+      parts.push('×' + fmtMult(DECADE_MULT));
+    }
+
+    if (rollMult > 1) combo *= rollMult;
+    else combo = 1;
+    state.combo = combo;
+
+    const gained = Math.round(base * combo);
+
+    lastNumber = value;
+    lastRollSpecial = isSpecial;
+    state.lastNumber = value;
+    state.lastSpecial = isSpecial;
+    state.points += gained;
+    if (state.points > state.best) state.best = state.points;
+
+    numberEl.textContent = value;
+    numberEl.classList.remove('pop', 'special');
+    void numberEl.offsetWidth;
+    numberEl.classList.add('pop');
+    if (isSpecial) numberEl.classList.add('special');
+
+    const inherited = combo > rollMult;
+    resultLabelEl.innerHTML =
+      '<span class="gain">+' + gained + '</span>' +
+      (parts.length ? ' <span class="bonus">· ' + parts.join(' ') + '</span>' : '') +
+      (inherited ? ' <span class="bonus">· комбо ×' + fmtMult(combo) + '</span>' : '');
+    state.lastResult = resultLabelEl.innerHTML;
+
+    renderCombo();
+    spawnGain(gained);
+
+    history.push(value);
+    if (history.length > 30) history.shift();
+    state.history = history;
+    renderHistory();
+
+    startCooldown();
+    render();
+  }
+
+  function shakeBtn() {
+    generateBtn.classList.remove('shake');
+    void generateBtn.offsetWidth;
+    generateBtn.classList.add('shake');
+  }
+
+  function startCooldown() {
+    cooldownUntil = Date.now() + cooldownMs;
+    cdTotal = cooldownMs;
+    saveCd();
+    generateBtn.classList.add('cooling');
+    requestAnimationFrame(tick);
+  }
+
+  function tick() {
+    const remaining = cooldownUntil - Date.now();
+
+    if (remaining <= 0) {
+      generateBtn.classList.remove('cooling');
+      cdFill.style.transform = 'scaleX(0)';
+      cdText.textContent = '🎲 Генерировать';
+      return;
+    }
+
+    cdFill.style.transform = 'scaleX(' + Math.min(1, remaining / cdTotal).toFixed(4) + ')';
+    cdText.textContent = '⏳ ' + (remaining / 1000).toFixed(1) + ' с';
+    requestAnimationFrame(tick);
+  }
+
+  generateBtn.addEventListener('click', generate);
+
+  const SHOP_UI_KEY = 'idleRandomizerUI_shop';
+
+  function setShopOpen(open) {
+    shopDrawer.classList.toggle('open', open);
+    shopTab.classList.toggle('open', open);
+    document.body.classList.toggle('shop-open', open);
+    shopTab.setAttribute('aria-expanded', String(open));
+    try { localStorage.setItem(SHOP_UI_KEY, open ? '1' : '0'); } catch (e) {}
+  }
+
+  try {
+    if (localStorage.getItem(SHOP_UI_KEY) === '1') setShopOpen(true);
+  } catch (e) {}
+
+  shopTab.addEventListener('click', () => {
+    setShopOpen(!shopDrawer.classList.contains('open'));
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') setShopOpen(false);
+  });
+
+  rangeSlider.addEventListener('pointerdown', (e) => {
+    if (state.rangeLevel <= 0) return;
+    rangeSlider.focus();
+    rangeSlider.setPointerCapture(e.pointerId);
+    rangeSlider.classList.add('dragging');
+    sliderThumb.style.left = (sliderFraction(e.clientX) * 100) + '%';
+    applySliderValue(sliderValueAt(e.clientX));
+  });
+
+  rangeSlider.addEventListener('pointermove', (e) => {
+    if (!rangeSlider.classList.contains('dragging')) return;
+    sliderThumb.style.left = (sliderFraction(e.clientX) * 100) + '%';
+    applySliderValue(sliderValueAt(e.clientX));
+  });
+
+  function endSliderDrag() {
+    if (!rangeSlider.classList.contains('dragging')) return;
+    rangeSlider.classList.remove('dragging');
+    setThumb(state.sliderMin);
+  }
+
+  rangeSlider.addEventListener('pointerup', endSliderDrag);
+  rangeSlider.addEventListener('pointercancel', endSliderDrag);
+
+  rangeSlider.addEventListener('keydown', (e) => {
+    if (state.rangeLevel <= 0) return;
+    let v = state.sliderMin;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') v -= 1;
+    else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') v += 1;
+    else if (e.key === 'Home') v = sliderRange.min;
+    else if (e.key === 'End') v = sliderRange.max;
+    else return;
+    e.preventDefault();
+    applySliderValue(v);
+    setThumb(state.sliderMin);
+  });
+
+  buyCd.addEventListener('click', () => {
+    const cost = cdCost();
+    if (cooldownMs <= MIN_COOLDOWN || state.points < cost) return;
+    state.points -= cost;
+    state.cooldownLevel += 1;
+    cooldownMs = getCooldownMs();
+    render();
+  });
+
+  buyRange.addEventListener('click', () => {
+    if (state.rangeLevel >= MAX_RANGE_LEVEL) return;
+    const cost = rangeCost();
+    if (state.points < cost) return;
+    state.points -= cost;
+    state.rangeLevel += 1;
+    render();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Tab') {
+      e.preventDefault();
+      return;
+    }
+    if (e.code === 'Space') {
+      e.preventDefault();
+      if (document.activeElement && document.activeElement !== document.body) {
+        document.activeElement.blur();
+      }
+      generate();
+    }
+  });
+
+  document.addEventListener('click', () => {
+    if (document.activeElement && document.activeElement !== document.body) {
+      document.activeElement.blur();
+    }
+  });
+
+  render();
+  renderCombo();
+  renderHistory();
+
+  const backBtn = $('backBtn');
+  let leaving = false;
+
+  backBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (leaving) return;
+    leaving = true;
+    try { sessionStorage.setItem('idleRandomizerTrans', '1'); } catch (err) {}
+
+    const HOUSE_SVG =
+      '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M3 11 12 3l9 8"/><path d="M5.5 9.5V21h13V9.5"/><path d="M10 21v-6h4v6"/></svg>';
+
+    const r = backBtn.getBoundingClientRect();
+    const overlay = document.createElement('div');
+    overlay.className = 'nav-overlay';
+    overlay.innerHTML = '<div class="nav-house">' + HOUSE_SVG + '</div>';
+    document.body.appendChild(overlay);
+
+    const house = overlay.querySelector('.nav-house');
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const coverScale = (Math.hypot(vw, vh) / 24) * 1.1;
+
+    overlay.animate(
+      [
+        { top: r.top + 'px', left: r.left + 'px', width: r.width + 'px', height: r.height + 'px' },
+        { top: '0px', left: '0px', width: vw + 'px', height: vh + 'px' }
+      ],
+      { duration: 380, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'forwards' }
+    ).onfinish = () => {
+      house.animate(
+        [{ transform: 'scale(1)' }, { transform: 'scale(' + coverScale + ')' }],
+        { duration: 450, easing: 'cubic-bezier(0.55, 0, 0.85, 0.35)', fill: 'forwards' }
+      ).onfinish = () => {
+        window.location.href = backBtn.href;
+      };
+    };
+  });
+
+  if (lastNumber !== null && lastNumber !== undefined) {
+    numberEl.textContent = lastNumber;
+    if (SPECIALS.includes(lastNumber)) numberEl.classList.add('special');
+    if (state.lastResult) resultLabelEl.innerHTML = state.lastResult;
+  }
+</script>
+
+</body>
+</html>

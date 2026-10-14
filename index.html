@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Randomizer — Меню</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; border-radius: 0; user-select: none; -webkit-user-select: none; }
+
+  body {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background: radial-gradient(circle, #000000 0%, #494949 300%);
+    color: #f0f0f0;
+    padding: 34px 20px;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 10px;
+    border: 2px solid;
+    border-image: linear-gradient(180deg, #fff7a3, #ffd700 50%, #b8860b) 1;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  .btn, .toast {
+    border: 1px solid;
+    border-image: linear-gradient(180deg, #fff7a3, #ffd700 50%, #b8860b) 1;
+  }
+
+  .menu {
+    width: 100%;
+    max-width: 560px;
+    background: rgba(8, 8, 8, 0.78);
+    padding: 34px 28px;
+    text-align: center;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  }
+
+  h1 {
+    font-size: clamp(46px, 12vw, 68px);
+    letter-spacing: 3px;
+    line-height: 1.2;
+    padding: 8px 0;
+    background: linear-gradient(180deg, #fff7a3, #ffd700 55%, #b8860b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 20px;
+  }
+
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 10px;
+    background: #131313;
+    color: #ffe98a;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: filter 0.15s ease;
+  }
+
+  .btn:hover { filter: brightness(1.6); }
+
+  .slots {
+    display: grid;
+    gap: 10px;
+    max-height: 0;
+    margin-bottom: 0;
+    opacity: 0;
+    overflow: hidden;
+    visibility: hidden;
+    transition: max-height 0.35s ease, opacity 0.3s ease, margin-bottom 0.35s ease, visibility 0s linear 0.35s;
+  }
+
+  .slots.open {
+    max-height: 320px;
+    margin-bottom: 10px;
+    opacity: 1;
+    visibility: visible;
+    transition: max-height 0.35s ease, opacity 0.3s ease 0.05s, margin-bottom 0.35s ease, visibility 0s;
+  }
+
+  .slot-row {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .slot {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: stretch;
+    background: #131313;
+    border: 1px solid;
+    border-image: linear-gradient(180deg, #fff7a3, #ffd700 50%, #b8860b) 1;
+  }
+
+  .slot-link {
+    flex: 1;
+    min-width: 0;
+    min-height: 62px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 16px;
+    color: #ffe98a;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 700;
+    transition: filter 0.15s ease;
+  }
+
+  .slot-link:hover { filter: brightness(1.6); }
+
+  .slot .slot-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    white-space: nowrap;
+  }
+
+  .slot-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.15;
+  }
+
+  .slot-stat .label {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #9a9a9a;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .slot-stat .value {
+    font-size: 17px;
+    font-weight: 700;
+    color: #ffd700;
+  }
+
+  .slot-empty {
+    font-size: 13px;
+    color: #6f6f6f;
+  }
+
+  .slot-reset {
+    width: 50px;
+    background: #131313;
+    border: 1px solid;
+    border-image: linear-gradient(180deg, #fff7a3, #ffd700 50%, #b8860b) 1;
+    color: #ff9d9d;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: filter 0.15s ease, background 0.15s ease;
+  }
+
+  .slot-reset:hover {
+    filter: brightness(1.6);
+    background: rgba(255, 110, 110, 0.1);
+  }
+
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(0, 0, 0, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-backdrop[hidden] { display: none; }
+
+  .modal {
+    width: 100%;
+    max-width: 360px;
+    background: #131313;
+    border: 1px solid;
+    border-image: linear-gradient(180deg, #fff7a3, #ffd700 50%, #b8860b) 1;
+    padding: 26px 24px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+  }
+
+  .modal-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffe98a;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .modal-actions .btn {
+    margin-bottom: 0;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .modal-actions .btn-ok { color: #ff9d9d; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: #131313;
+    color: #ffe98a;
+    padding: 11px 20px;
+    font-size: 14px;
+    opacity: 0;
+    transition: 0.3s ease;
+    pointer-events: none;
+  }
+
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .nav-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    pointer-events: none;
+  }
+
+  .nav-house {
+    color: #ffe98a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    will-change: transform;
+  }
+
+  .nav-house svg { display: block; width: 24px; height: 24px; }
+</style>
+</head>
+<body>
+
+<div class="menu">
+  <h1>RANDOMIZER</h1>
+
+  <button class="btn" id="playBtn" type="button">▶ Играть</button>
+  <div class="slots" id="slots"></div>
+</div>
+
+<div class="modal-backdrop" id="modal" hidden>
+  <div class="modal">
+    <div class="modal-text" id="modalText"></div>
+    <div class="modal-actions">
+      <button class="btn" id="modalCancel" type="button">Отмена</button>
+      <button class="btn btn-ok" id="modalOk" type="button">Сброс</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  const SLOT_COUNT = 3;
+  const DEFAULT = { points: 0, best: 0, cooldownLevel: 0, rangeLevel: 0, sliderMin: 1, combo: 1 };
+
+  function slotKey(n) {
+    return 'idleRandomizerSave_' + n;
+  }
+
+  function migrate() {
+    try {
+      const old = localStorage.getItem('idleRandomizerSave');
+      if (!old) return;
+      if (!localStorage.getItem(slotKey(1))) localStorage.setItem(slotKey(1), old);
+      localStorage.removeItem('idleRandomizerSave');
+    } catch (e) {}
+  }
+
+  function loadSlot(n) {
+    try {
+      const raw = localStorage.getItem(slotKey(n));
+      if (!raw) return null;
+      return { ...DEFAULT, ...JSON.parse(raw) };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  migrate();
+
+  const slotsEl = document.getElementById('slots');
+
+  function renderSlots() {
+    slotsEl.innerHTML = '';
+    for (let i = 1; i <= SLOT_COUNT; i++) {
+      const s = loadSlot(i);
+      const row = document.createElement('div');
+      row.className = 'slot-row';
+      row.innerHTML =
+        '<div class="slot">' +
+          '<a class="slot-link" href="game.html?slot=' + i + '">' +
+            '<span class="slot-name">Слот ' + i + '</span>' +
+            '<div class="slot-info">' +
+              (s
+                ? '<div class="slot-stat"><span class="label">Очки</span><span class="value">' + s.points + '</span></div>' +
+                  '<div class="slot-stat"><span class="label">Рекорд</span><span class="value">' + s.best + '</span></div>'
+                : '<span class="slot-empty">Пусто</span>') +
+            '</div>' +
+          '</a>' +
+        '</div>' +
+        '<button class="slot-reset" type="button" data-slot="' + i + '" title="Сбросить слот">✕</button>';
+      slotsEl.appendChild(row);
+    }
+  }
+
+  const modalEl = document.getElementById('modal');
+  const modalTextEl = document.getElementById('modalText');
+  let modalResolve = null;
+
+  function askConfirm(text) {
+    modalTextEl.textContent = text;
+    modalEl.hidden = false;
+    return new Promise((resolve) => { modalResolve = resolve; });
+  }
+
+  function closeModal(result) {
+    modalEl.hidden = true;
+    if (modalResolve) {
+      modalResolve(result);
+      modalResolve = null;
+    }
+  }
+
+  document.getElementById('modalOk').addEventListener('click', () => closeModal(true));
+  document.getElementById('modalCancel').addEventListener('click', () => closeModal(false));
+  modalEl.addEventListener('click', (e) => { if (e.target === modalEl) closeModal(false); });
+
+  const SLOTS_UI_KEY = 'idleRandomizerUI_slots';
+
+  document.getElementById('playBtn').addEventListener('click', () => {
+    const open = !slotsEl.classList.contains('open');
+    slotsEl.classList.toggle('open', open);
+    renderSlots();
+    try { localStorage.setItem(SLOTS_UI_KEY, open ? '1' : '0'); } catch (e) {}
+  });
+
+  try {
+    if (localStorage.getItem(SLOTS_UI_KEY) === '1') {
+      renderSlots();
+      slotsEl.classList.add('open');
+    }
+  } catch (e) {}
+
+  slotsEl.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.slot-reset');
+    if (!btn) return;
+    const n = parseInt(btn.dataset.slot, 10);
+    const ok = await askConfirm('Сбросить слот ' + n + '?');
+    if (!ok) return;
+    localStorage.removeItem(slotKey(n));
+    renderSlots();
+    toast('Слот ' + n + ' сброшен');
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Tab') e.preventDefault();
+  });
+
+  document.addEventListener('click', () => {
+    if (document.activeElement && document.activeElement !== document.body) {
+      document.activeElement.blur();
+    }
+  });
+
+  let toastTimer = null;
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
+  }
+
+  try {
+    if (sessionStorage.getItem('idleRandomizerTrans') === '1') {
+      sessionStorage.removeItem('idleRandomizerTrans');
+
+      const HOUSE_SVG =
+        '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+        '<path d="M3 11 12 3l9 8"/><path d="M5.5 9.5V21h13V9.5"/><path d="M10 21v-6h4v6"/></svg>';
+
+      const overlay = document.createElement('div');
+      overlay.className = 'nav-overlay';
+      overlay.innerHTML = '<div class="nav-house">' + HOUSE_SVG + '</div>';
+      document.body.appendChild(overlay);
+
+      const house = overlay.querySelector('.nav-house');
+      const big = (Math.hypot(window.innerWidth, window.innerHeight) / 24) * 1.1;
+
+      house.animate(
+        [
+          { transform: 'scale(' + big + ')', opacity: 1 },
+          { transform: 'scale(1)', opacity: 1, offset: 0.65 },
+          { transform: 'scale(1)', opacity: 0 }
+        ],
+        { duration: 520, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'forwards' }
+      ).onfinish = () => overlay.remove();
+    }
+  } catch (e) {}
+</script>
+
+</body>
+</html>
