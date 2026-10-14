@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Randomizer — Настройки</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; border-radius: 0; user-select: none; -webkit-user-select: none; }
+
+  body {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background: radial-gradient(circle, #000000 0%, #494949 300%);
+    color: #f0f0f0;
+    padding: 34px 20px;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 10px;
+    border: 2px solid;
+    border-image: linear-gradient(180deg, #fff7a3, #ffd700 50%, #b8860b) 1;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  .back {
+    position: fixed;
+    top: 22px;
+    left: 22px;
+    z-index: 50;
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffe98a;
+    text-decoration: none;
+    font-size: 24px;
+    line-height: 1;
+    background: rgba(8, 8, 8, 0.75);
+    border: 1px solid;
+    border-image: linear-gradient(180deg, #fff7a3, #ffd700 50%, #b8860b) 1;
+    transition: filter 0.15s;
+  }
+
+  .back svg { display: block; }
+  .back:hover { filter: brightness(1.7); }
+
+  .menu {
+    width: 100%;
+    max-width: 560px;
+    background: rgba(8, 8, 8, 0.78);
+    padding: 34px 28px;
+    text-align: center;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  }
+
+  h1 {
+    font-size: clamp(38px, 10vw, 56px);
+    letter-spacing: 3px;
+    line-height: 1.2;
+    padding: 8px 0;
+    background: linear-gradient(180deg, #fff7a3, #ffd700 55%, #b8860b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 24px;
+  }
+
+  .setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    background: #131313;
+    border: 1px solid;
+    border-image: linear-gradient(180deg, #fff7a3, #ffd700 50%, #b8860b) 1;
+    text-align: left;
+  }
+
+  .setting-info { min-width: 0; }
+
+  .setting-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffe98a;
+  }
+
+  .setting-desc {
+    font-size: 12px;
+    color: #9a9a9a;
+    margin-top: 3px;
+  }
+
+  .switch {
+    position: relative;
+    flex: 0 0 56px;
+    width: 56px;
+    height: 28px;
+    background: #2a2a2a;
+    border: 1px solid;
+    border-image: linear-gradient(180deg, #fff7a3, #ffd700 50%, #b8860b) 1;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .switch .knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 22px;
+    height: 22px;
+    background: #6a6a6a;
+    transition: left 0.2s ease, background 0.2s ease;
+  }
+
+  .switch.on { background: rgba(255, 215, 0, 0.15); }
+
+  .switch.on .knob {
+    left: 30px;
+    background: linear-gradient(180deg, #fff7a3, #ffd700 55%, #b8860b);
+  }
+
+  .nav-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    pointer-events: none;
+  }
+
+  .nav-house {
+    color: #ffe98a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    will-change: transform;
+  }
+
+  .nav-house svg { display: block; width: 24px; height: 24px; }
+</style>
+</head>
+<body>
+
+<a class="back" href="index.html" id="backBtn" title="Назад" aria-label="Назад">
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 11 12 3l9 8"/>
+    <path d="M5.5 9.5V21h13V9.5"/>
+    <path d="M10 21v-6h4v6"/>
+  </svg>
+</a>
+
+<div class="menu">
+  <h1>НАСТРОЙКИ</h1>
+
+  <div class="setting-row">
+    <div class="setting-info">
+      <div class="setting-title">Мигание кнопки магазина</div>
+      <div class="setting-desc">Жёлтое свечение у вкладки, когда хватает на покупку</div>
+    </div>
+    <div class="switch" id="swShopGlow" role="switch" aria-label="Мигание кнопки магазина"><span class="knob"></span></div>
+  </div>
+
+  <div class="setting-row">
+    <div class="setting-info">
+      <div class="setting-title">Список последних цифр</div>
+      <div class="setting-desc">Показывать историю выпавших чисел в игре</div>
+    </div>
+    <div class="switch" id="swHistory" role="switch" aria-label="Список последних цифр"><span class="knob"></span></div>
+  </div>
+
+  <div class="setting-row">
+    <div class="setting-info">
+      <div class="setting-title">Анимация переходов</div>
+      <div class="setting-desc">Плавный переход с иконкой между страницами</div>
+    </div>
+    <div class="switch" id="swTransitions" role="switch" aria-label="Анимация переходов"><span class="knob"></span></div>
+  </div>
+</div>
+
+<script>
+  const SETTINGS_KEY = 'idleRandomizerSettings';
+
+  function loadSettings() {
+    const def = { shopGlow: true, showHistory: true, transitions: true };
+    try {
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      if (!raw) return def;
+      return { ...def, ...JSON.parse(raw) };
+    } catch (e) {
+      return def;
+    }
+  }
+
+  function saveSettings(s) {
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch (e) {}
+  }
+
+  const settings = loadSettings();
+
+  const ICONS = {
+    house:
+      '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M3 11 12 3l9 8"/><path d="M5.5 9.5V21h13V9.5"/><path d="M10 21v-6h4v6"/></svg>',
+    gear:
+      '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      '<circle cx="12" cy="12" r="3"/>' +
+      '<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
+  };
+
+  const swShopGlow = document.getElementById('swShopGlow');
+  const swHistory = document.getElementById('swHistory');
+  const swTransitions = document.getElementById('swTransitions');
+
+  function paint() {
+    swShopGlow.classList.toggle('on', settings.shopGlow);
+    swHistory.classList.toggle('on', settings.showHistory);
+    swTransitions.classList.toggle('on', settings.transitions);
+  }
+
+  swShopGlow.addEventListener('click', () => {
+    settings.shopGlow = !settings.shopGlow;
+    saveSettings(settings);
+    paint();
+  });
+
+  swHistory.addEventListener('click', () => {
+    settings.showHistory = !settings.showHistory;
+    saveSettings(settings);
+    paint();
+  });
+
+  swTransitions.addEventListener('click', () => {
+    settings.transitions = !settings.transitions;
+    saveSettings(settings);
+    paint();
+  });
+
+  paint();
+
+  // Back navigation with house transition
+  const backBtn = document.getElementById('backBtn');
+  let returnHref = 'index.html';
+  try {
+    const from = sessionStorage.getItem('idleRandomizerSetFrom');
+    if (from) returnHref = from;
+  } catch (e) {}
+  backBtn.setAttribute('href', returnHref);
+
+  function navigateWithIcon(btn, href, iconName) {
+    if (!settings.transitions) {
+      window.location.href = href;
+      return;
+    }
+    try {
+      sessionStorage.setItem('idleRandomizerTrans', '1');
+      sessionStorage.setItem('idleRandomizerTransIcon', iconName);
+    } catch (e) {}
+
+    const r = btn.getBoundingClientRect();
+    const overlay = document.createElement('div');
+    overlay.className = 'nav-overlay';
+    overlay.style.background = 'radial-gradient(circle, #000000 0%, #494949 300%)';
+    overlay.innerHTML = '<div class="nav-house">' + (ICONS[iconName] || ICONS.house) + '</div>';
+    document.body.appendChild(overlay);
+
+    const icon = overlay.querySelector('.nav-house');
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const coverScale = (Math.hypot(vw, vh) / 24) * 1.1;
+
+    overlay.animate(
+      [
+        { top: r.top + 'px', left: r.left + 'px', width: r.width + 'px', height: r.height + 'px' },
+        { top: '0px', left: '0px', width: vw + 'px', height: vh + 'px' }
+      ],
+      { duration: 380, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'forwards' }
+    ).onfinish = () => {
+      icon.animate(
+        [{ transform: 'scale(1)' }, { transform: 'scale(' + coverScale + ')' }],
+        { duration: 450, easing: 'cubic-bezier(0.55, 0, 0.85, 0.35)', fill: 'forwards' }
+      ).onfinish = () => {
+        window.location.href = href;
+      };
+    };
+  }
+
+  let leaving = false;
+  backBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (leaving) return;
+    leaving = true;
+    navigateWithIcon(backBtn, returnHref, 'house');
+  });
+
+  // Reveal animation on load (icon shrinks)
+  try {
+    if (sessionStorage.getItem('idleRandomizerTrans') === '1') {
+      sessionStorage.removeItem('idleRandomizerTrans');
+      const iconName = sessionStorage.getItem('idleRandomizerTransIcon') || 'house';
+      sessionStorage.removeItem('idleRandomizerTransIcon');
+
+      const overlay = document.createElement('div');
+      overlay.className = 'nav-overlay';
+      overlay.innerHTML = '<div class="nav-house">' + (ICONS[iconName] || ICONS.house) + '</div>';
+      document.body.appendChild(overlay);
+
+      const icon = overlay.querySelector('.nav-house');
+      const big = (Math.hypot(window.innerWidth, window.innerHeight) / 24) * 1.1;
+
+      icon.animate(
+        [
+          { transform: 'scale(' + big + ')', opacity: 1 },
+          { transform: 'scale(1)', opacity: 1, offset: 0.65 },
+          { transform: 'scale(1)', opacity: 0 }
+        ],
+        { duration: 520, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'forwards' }
+      ).onfinish = () => overlay.remove();
+    }
+  } catch (e) {}
+
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Tab') e.preventDefault();
+  });
+
+  document.addEventListener('click', () => {
+    if (document.activeElement && document.activeElement !== document.body) {
+      document.activeElement.blur();
+    }
+  });
+</script>
+
+</body>
+</html>
