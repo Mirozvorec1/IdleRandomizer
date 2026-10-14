@@ -653,8 +653,8 @@
           <div class="name">Минимум диапазона</div>
           <div class="desc">+1 к ползунку за уровень.</div>
           <div class="meta">
-            <span class="level" id="rangeLevel">Ур. 0/99</span>
-            <span class="val" id="rangeVal">Макс. ползунка: 1/100</span>
+            <span class="level" id="rangeLevel">Ур. 0/100</span>
+            <span class="val" id="rangeVal">Макс. броска: 100 · ползунок до 1</span>
           </div>
         </div>
         <button class="buy-btn" id="buyRange">Купить</button>
@@ -688,7 +688,7 @@
       localStorage.removeItem('idleRandomizerSave');
     }
   } catch (e) {}
-  const SPECIALS = [100, 42, 69, 67, 72];
+  const SPECIALS = [100, 42, 69, 67, 72, 111, 141, 123, 200];
   const SPECIAL_POINTS = 10;
   const NORMAL_POINTS = 1;
 
@@ -697,13 +697,17 @@
   const DECADE_MULT = 1.5;
   const SPECIAL_MULT = 2;
 
+  const HUNDRED_MIN = 101;
+  const HUNDRED_MAX = 200;
+  const HUNDRED_MULT = 2;
+
   const BASE_COOLDOWN = 3000;
   const COOLDOWN_STEP = 250;
   const MIN_COOLDOWN = 250;
   const CD_PENALTY = 500;
   const MAX_CD_MS = 10000;
   const MAX_CD_LEVEL = Math.round((BASE_COOLDOWN - MIN_COOLDOWN) / COOLDOWN_STEP);
-  const MAX_RANGE_LEVEL = 99;
+  const MAX_RANGE_LEVEL = 100;
 
   const DEFAULT = {
     points: 0,
@@ -855,6 +859,10 @@
     return Math.min(Math.max(state.sliderMin, 1), cap);
   }
 
+  function getRollMax() {
+    return 100 + state.rangeLevel;
+  }
+
   function setSliderRange(min, max) {
     if (sliderRange.min === min && sliderRange.max === max) return;
     sliderRange = { min, max };
@@ -908,7 +916,7 @@
     const c = Math.min(Math.max(v, sliderRange.min), sliderRange.max);
     if (c === state.sliderMin) return;
     state.sliderMin = c;
-    rangeValue.textContent = c + ' – 100';
+    rangeValue.textContent = c + ' – ' + getRollMax();
     save();
   }
 
@@ -921,7 +929,7 @@
 
     cdLevelEl.textContent = 'Ур. ' + state.cooldownLevel + '/' + MAX_CD_LEVEL;
     rangeLevelEl.textContent = 'Ур. ' + state.rangeLevel + '/' + MAX_RANGE_LEVEL;
-    rangeValEl.textContent = 'Макс. ползунка: ' + Math.min(100, 1 + state.rangeLevel) + '/100';
+    rangeValEl.textContent = 'Макс. броска: ' + getRollMax() + ' · ползунок до ' + Math.min(100, 1 + state.rangeLevel);
 
     renderBuy(buyCd, state.cooldownLevel >= MAX_CD_LEVEL, cdCost());
     renderBuy(buyRange, state.rangeLevel >= MAX_RANGE_LEVEL, rangeCost());
@@ -937,10 +945,10 @@
       if (state.sliderMin > sliderMax) state.sliderMin = sliderMax;
       if (state.sliderMin < 1) state.sliderMin = 1;
       setThumb(state.sliderMin);
-      rangeValue.textContent = state.sliderMin + ' – 100';
+      rangeValue.textContent = state.sliderMin + ' – ' + getRollMax();
     } else {
       rangeRow.classList.remove('visible');
-      rangeValue.textContent = '1 – 100';
+      rangeValue.textContent = '1 – ' + getRollMax();
     }
 
     save();
@@ -991,8 +999,10 @@
     }
 
     const min = getMinValue();
-    const value = Math.floor(Math.random() * (100 - min + 1)) + min;
+    const rollMax = getRollMax();
+    const value = Math.floor(Math.random() * (rollMax - min + 1)) + min;
     const isSpecial = SPECIALS.includes(value);
+    const isHundred = value >= HUNDRED_MIN && value <= HUNDRED_MAX;
     const base = isSpecial ? SPECIAL_POINTS : NORMAL_POINTS;
 
     const isDouble = value >= 11 && value <= 99 && value % 11 === 0;
@@ -1023,7 +1033,8 @@
     else combo = 1;
     state.combo = combo;
 
-    const gained = Math.round(base * combo);
+    const hundredMult = isHundred ? HUNDRED_MULT : 1;
+    const gained = Math.round(base * hundredMult * combo);
 
     lastNumber = value;
     lastRollSpecial = isSpecial;
@@ -1041,6 +1052,7 @@
     const inherited = combo > rollMult;
     resultLabelEl.innerHTML =
       '<span class="gain">+' + gained + '</span>' +
+      (isHundred ? ' <span class="bonus">· сотня ×' + fmtMult(HUNDRED_MULT) + '</span>' : '') +
       (parts.length ? ' <span class="bonus">· ' + parts.join(' ') + '</span>' : '') +
       (inherited ? ' <span class="bonus">· комбо ×' + fmtMult(combo) + '</span>' : '');
     state.lastResult = resultLabelEl.innerHTML;
