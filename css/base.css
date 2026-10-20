@@ -1,0 +1,259 @@
+/* ============================================================
+   base.css — общие стили всех страниц
+   Сброс, фон, золотая рамка, кнопки, карточка меню, шапка
+   (домик / шестерёнка), анимация перехода, переключатели,
+   модальное окно, тост.
+   ============================================================ */
+
+/* ---------- Сброс ---------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  border-radius: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ---------- Основа страницы ---------- */
+body {
+  position: relative;
+  min-height: 100vh;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  background: radial-gradient(circle, #000000 0%, #494949 300%);
+  color: #f0f0f0;
+  padding: 34px 20px;
+}
+
+/* Страницы с вертикальным центрированием (меню, настройки) */
+body.page-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- Золотая рамка экрана ---------- */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 10px;
+  border: 2px solid;
+  border-image: linear-gradient(180deg, #fff7a3, #ffd700 50%, #b8860b) 1;
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* ---------- Золотая рамка элементов ---------- */
+.back,
+.gear,
+.btn,
+.toast,
+.slot,
+.slot-reset,
+.modal,
+.switch {
+  border: 1px solid;
+  border-image: linear-gradient(180deg, #fff7a3, #ffd700 50%, #b8860b) 1;
+}
+
+/* ---------- Кнопка ---------- */
+.btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 10px;
+  background: #131313;
+  color: #ffe98a;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: filter 0.15s ease;
+}
+
+.btn:hover { filter: brightness(1.6); }
+
+/* ---------- Карточка (меню / настройки) ---------- */
+.menu {
+  width: 100%;
+  max-width: 560px;
+  background: rgba(8, 8, 8, 0.78);
+  padding: 34px 28px;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+}
+
+.menu h1 {
+  letter-spacing: 3px;
+  line-height: 1.2;
+  padding: 8px 0;
+  background: linear-gradient(180deg, #fff7a3, #ffd700 55%, #b8860b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------- Шапка: домик и шестерёнка ---------- */
+.back {
+  position: fixed;
+  top: 22px;
+  left: 22px;
+  z-index: 50;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffe98a;
+  text-decoration: none;
+  font-size: 24px;
+  line-height: 1;
+  background: rgba(8, 8, 8, 0.75);
+  transition: filter 0.15s;
+}
+
+.back svg { display: block; }
+.back:hover { filter: brightness(1.7); }
+
+.gear {
+  position: fixed;
+  top: 22px;
+  z-index: 50;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffe98a;
+  background: rgba(8, 8, 8, 0.75);
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.gear svg { display: block; }
+.gear:hover { filter: brightness(1.7); }
+
+/* Положение шестерёнки: в меню — справа, в игре — рядом с домиком */
+.gear--menu { right: 22px; }
+.gear--game { left: 76px; }
+
+/* ---------- Анимация перехода между страницами ---------- */
+.nav-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: radial-gradient(circle, #000000 0%, #3a3a3a 300%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Иконка перехода: маленькая, летит от кнопки в центр экрана */
+.nav-house {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  color: #ffe98a;
+  will-change: transform;
+}
+
+.nav-icon {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%);
+}
+
+.nav-icon svg { display: block; width: 24px; height: 24px; }
+
+/* ---------- Переключатель (страница настроек) ---------- */
+.switch {
+  position: relative;
+  flex: 0 0 56px;
+  width: 56px;
+  height: 28px;
+  background: #2a2a2a;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.switch .knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  background: #6a6a6a;
+  transition: left 0.2s ease, background 0.2s ease;
+}
+
+.switch.on { background: rgba(255, 215, 0, 0.15); }
+
+.switch.on .knob {
+  left: 30px;
+  background: linear-gradient(180deg, #fff7a3, #ffd700 55%, #b8860b);
+}
+
+/* ---------- Модальное окно подтверждения ---------- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-backdrop[hidden] { display: none; }
+
+.modal {
+  width: 100%;
+  max-width: 360px;
+  background: #131313;
+  padding: 26px 24px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+}
+
+.modal-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffe98a;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.modal-actions .btn {
+  margin-bottom: 0;
+  padding: 12px;
+  text-align: center;
+}
+
+.modal-actions .btn-ok { color: #ff9d9d; }
+
+/* ---------- Тост ---------- */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: #131313;
+  color: #ffe98a;
+  padding: 11px 20px;
+  font-size: 14px;
+  opacity: 0;
+  transition: 0.3s ease;
+  pointer-events: none;
+}
+
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }

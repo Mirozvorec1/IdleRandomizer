@@ -1,0 +1,36 @@
+/* ============================================================
+   settings.css — страница настроек
+   Строки переключателей: название, описание, свитч.
+   ============================================================ */
+
+.menu h1 {
+  font-size: clamp(38px, 10vw, 56px);
+  margin-bottom: 24px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  background: #131313;
+  border: 1px solid;
+  border-image: linear-gradient(180deg, #fff7a3, #ffd700 50%, #b8860b) 1;
+  text-align: left;
+}
+
+.setting-info { min-width: 0; }
+
+.setting-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffe98a;
+}
+
+.setting-desc {
+  font-size: 12px;
+  color: #9a9a9a;
+  margin-top: 3px;
+}
